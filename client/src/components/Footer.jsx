@@ -122,9 +122,9 @@ export default function Footer() {
               <h5>Contact</h5>
 
               <div className="footer-contact">
-                <p><Telephone /> +1 000 000 0000</p>
-                <p><Envelope /> info@vipersports.com</p>
-                <p><GeoAlt /> Toronto, Canada</p>
+                <p><Telephone /> +44 1706536737</p>
+                <p><Envelope /> info@vipersports.co</p>
+                <p><GeoAlt /> Registered Office: Unit 4, Green Grove Mill, Dyehouse Lane, Rochdale, England, OL16 2QN, Registered in England and Wales</p>
               </div>
 
               <div className="footer-highlight">
@@ -138,7 +138,7 @@ export default function Footer() {
         </div>
 
         <div className="footer-bottom">
-          <p>© 2026 VIPER SPORTS. All Rights Reserved.</p>
+          <p>© 2026 Viper Sports. All Rights Reserved.</p>
 
           <div>
             <a href="#">Privacy Policy</a>

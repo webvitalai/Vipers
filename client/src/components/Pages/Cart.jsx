@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Container, Row, Col, Button } from "react-bootstrap";
+import emailjs from "@emailjs/browser";
 import {
   ArrowLeft,
   Trash,
@@ -14,10 +15,42 @@ import { useNavigate } from "react-router-dom";
 export default function Cart() {
   const navigate = useNavigate();
   const [cartItems, setCartItems] = useState([]);
+  const [discountData, setDiscountData] = useState(null);
+  const [checkoutMsg, setCheckoutMsg] = useState("");
+  const [checkoutError, setCheckoutError] = useState("");
+  const [checkingOut, setCheckingOut] = useState(false);
 
   useEffect(() => {
     const savedCart = JSON.parse(localStorage.getItem("cartItems")) || [];
+    const savedDiscount = JSON.parse(localStorage.getItem("viperDiscount"));
+
     setCartItems(savedCart);
+
+    if (savedDiscount && savedDiscount.expiresAt > Date.now()) {
+      setDiscountData(savedDiscount);
+    } else {
+      localStorage.removeItem("viperDiscount");
+      localStorage.removeItem("discount");
+      setDiscountData(null);
+    }
+
+    const handleDiscountUpdate = () => {
+      const updatedDiscount = JSON.parse(localStorage.getItem("viperDiscount"));
+
+      if (updatedDiscount && updatedDiscount.expiresAt > Date.now()) {
+        setDiscountData(updatedDiscount);
+      } else {
+        localStorage.removeItem("viperDiscount");
+        localStorage.removeItem("discount");
+        setDiscountData(null);
+      }
+    };
+
+    window.addEventListener("discountUpdated", handleDiscountUpdate);
+
+    return () => {
+      window.removeEventListener("discountUpdated", handleDiscountUpdate);
+    };
   }, []);
 
   const updateCart = (items) => {
@@ -72,7 +105,101 @@ export default function Cart() {
   }, [cartItems]);
 
   const delivery = cartItems.length > 0 ? 9.99 : 0;
+
+  const discountAmount = useMemo(() => {
+    if (!discountData || cartItems.length === 0) return 0;
+
+    if (discountData.type === "percent") {
+      return (subtotal * discountData.value) / 100;
+    }
+
+    if (discountData.type === "delivery") {
+      return delivery;
+    }
+
+    return 0;
+  }, [discountData, subtotal, delivery, cartItems.length]);
+
   const total = subtotal + delivery;
+  const finalTotal = Math.max(total - discountAmount, 0);
+
+  const discountTimeLeft = useMemo(() => {
+    if (!discountData?.expiresAt) return "";
+
+    const remaining = discountData.expiresAt - Date.now();
+
+    if (remaining <= 0) return "Expired";
+
+    const hours = Math.floor(remaining / (1000 * 60 * 60));
+    const minutes = Math.floor((remaining / (1000 * 60)) % 60);
+
+    return `${hours}h ${minutes}m left`;
+  }, [discountData]);
+
+  const checkoutOrder = () => {
+    if (cartItems.length === 0 || checkingOut) return;
+
+    setCheckoutMsg("");
+    setCheckoutError("");
+    setCheckingOut(true);
+
+    const orderLines = cartItems
+      .map(
+        (item, index) =>
+          `${index + 1}. ${item.name} (${item.category}) x${item.quantity} - ${item.price}`
+      )
+      .join("\n");
+
+    const orderMessage = `
+New Order Received
+
+${orderLines}
+
+Subtotal: £${subtotal.toFixed(2)}
+Delivery: £${delivery.toFixed(2)}
+${
+  discountAmount > 0 && discountData
+    ? `Discount (${discountData.label}): -£${discountAmount.toFixed(2)}`
+    : "Discount: £0.00"
+}
+Final Total: £${finalTotal.toFixed(2)}
+`;
+
+   const templateParams = {
+  form_type: "Cart Checkout Order",
+  name: "Website Customer",
+  email: "Not provided",
+  phone: "Not provided",
+  category: "N/A",
+  product: "Multiple cart products",
+  size: "N/A",
+  quantity: cartItems.reduce((sum, item) => sum + item.quantity, 0),
+  message: "Checkout order placed from cart.",
+  order_message: orderMessage,
+  subtotal: `£${subtotal.toFixed(2)}`,
+  delivery: `£${delivery.toFixed(2)}`,
+  discount: discountAmount > 0 ? `-£${discountAmount.toFixed(2)}` : "£0.00",
+  final_total: `£${finalTotal.toFixed(2)}`,
+};
+
+    emailjs
+      .send(
+        "YOUR_SERVICE_ID",
+        "YOUR_TEMPLATE_ID",
+        templateParams,
+        "YOUR_PUBLIC_KEY"
+      )
+      .then(() => {
+        setCheckoutMsg("Order placed successfully. Our team will contact you soon.");
+        clearCart();
+      })
+      .catch(() => {
+        setCheckoutError("Order failed. Please try again.");
+      })
+      .finally(() => {
+        setCheckingOut(false);
+      });
+  };
 
   return (
     <main className="cart-page">
@@ -97,6 +224,9 @@ export default function Cart() {
 
             <h2>Your Cart Is Empty</h2>
             <p>Add products from the categories page to see them here.</p>
+
+            {checkoutMsg && <div className="checkout-success">{checkoutMsg}</div>}
+            {checkoutError && <div className="checkout-error">{checkoutError}</div>}
 
             <Button className="checkout-btn" onClick={() => navigate("/categories")}>
               Shop Products
@@ -168,15 +298,39 @@ export default function Cart() {
                   <b>£{delivery.toFixed(2)}</b>
                 </div>
 
+                {discountAmount > 0 && discountData && (
+                  <div className="discount-applied">
+                    <div>
+                      <span>{discountData.label}</span>
+                      <small>{discountTimeLeft}</small>
+                    </div>
+                    <strong>-£{discountAmount.toFixed(2)}</strong>
+                  </div>
+                )}
+
                 <div className="summary-line"></div>
+
+                {discountAmount > 0 && (
+                  <div className="summary-row old-total">
+                    <span>Before Discount</span>
+                    <b>£{total.toFixed(2)}</b>
+                  </div>
+                )}
 
                 <div className="summary-row total">
                   <span>Total</span>
-                  <b>£{total.toFixed(2)}</b>
+                  <b>£{finalTotal.toFixed(2)}</b>
                 </div>
 
-                <Button className="checkout-btn">
-                  <BagCheck /> Checkout
+                {checkoutMsg && <div className="checkout-success">{checkoutMsg}</div>}
+                {checkoutError && <div className="checkout-error">{checkoutError}</div>}
+
+                <Button
+                  className="checkout-btn"
+                  onClick={checkoutOrder}
+                  disabled={checkingOut}
+                >
+                  <BagCheck /> {checkingOut ? "Placing Order..." : "Checkout"}
                 </Button>
 
                 <button className="clear-btn" onClick={clearCart}>
@@ -433,10 +587,57 @@ export default function Cart() {
           color: var(--white-soft);
         }
 
+        .discount-applied {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 12px;
+          margin: 18px 0 12px;
+          padding: 14px;
+          border-radius: 18px;
+          background:
+            radial-gradient(circle at top left, rgba(246,201,14,.18), transparent 44%),
+            rgba(246,201,14,.08);
+          border: 1px solid rgba(246,201,14,.25);
+        }
+
+        .discount-applied span {
+          display: block;
+          color: var(--gold);
+          font-weight: 1000;
+          text-transform: uppercase;
+          font-size: 13px;
+          letter-spacing: 1px;
+        }
+
+        .discount-applied small {
+          display: block;
+          color: rgba(255,255,255,.58);
+          font-weight: 700;
+          margin-top: 4px;
+        }
+
+        .discount-applied strong {
+          color: var(--gold);
+          font-size: 18px;
+          font-weight: 1000;
+          white-space: nowrap;
+        }
+
         .summary-line {
           height: 1px;
           background: rgba(246,201,14,.2);
           margin: 18px 0;
+        }
+
+        .summary-row.old-total {
+          color: rgba(255,255,255,.42);
+          font-size: 13px;
+        }
+
+        .summary-row.old-total b {
+          color: rgba(255,255,255,.42);
+          text-decoration: line-through;
         }
 
         .summary-row.total {
@@ -446,6 +647,27 @@ export default function Cart() {
 
         .summary-row.total b {
           color: var(--gold);
+        }
+
+        .checkout-success,
+        .checkout-error {
+          padding: 13px 14px;
+          border-radius: 14px;
+          margin-top: 16px;
+          font-weight: 900;
+          font-size: 13px;
+        }
+
+        .checkout-success {
+          background: rgba(246,201,14,.12);
+          border: 1px solid rgba(246,201,14,.28);
+          color: var(--gold);
+        }
+
+        .checkout-error {
+          background: rgba(255,0,0,.12);
+          border: 1px solid rgba(255,80,80,.28);
+          color: #ff6b6b;
         }
 
         .checkout-btn {
@@ -464,6 +686,11 @@ export default function Cart() {
           gap: 8px;
           margin-top: 20px;
           box-shadow: 0 18px 38px rgba(246,201,14,.22);
+        }
+
+        .checkout-btn:disabled {
+          opacity: .7;
+          cursor: not-allowed;
         }
 
         .clear-btn {

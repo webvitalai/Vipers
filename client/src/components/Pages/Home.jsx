@@ -13,6 +13,11 @@ import {
   Whatsapp,
   Envelope,
   LightningChargeFill,
+  Phone,
+  PhoneFill,
+  PhoneLandscape,
+  PhoneVibrateFill,
+  PhoneVibrate,
 } from "react-bootstrap-icons";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useNavigate } from "react-router-dom";
@@ -188,8 +193,8 @@ export default function Home() {
                 <Row className="g-3">
                   <Col xs={12} md={6}>
                     <div className="input-box">
-                      <Whatsapp size={22} />
-                      <Form.Control type="tel" placeholder="WhatsApp number" />
+                      <PhoneVibrate size={22} />
+                      <Form.Control type="tel" placeholder="Phone Number" />
                     </div>
                   </Col>
 

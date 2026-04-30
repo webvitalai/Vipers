@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Container, Row, Col, Form, Button, Card } from "react-bootstrap";
+import emailjs from "@emailjs/browser";
 import {
-  Whatsapp,
   Envelope,
   Telephone,
   GeoAlt,
@@ -11,10 +11,12 @@ import {
 import "bootstrap/dist/css/bootstrap.min.css";
 
 export default function Contact() {
+  const [errorMsg, setErrorMsg] = useState("");
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    whatsapp: "",
+    phone: "",
     category: "",
     product: "",
     size: "",
@@ -23,6 +25,7 @@ export default function Contact() {
   });
 
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
 
   const productsByCategory = {
     Boxing: ["Men Boxing Kit", "Women Boxing Kit", "Boxing Shoes", "Punching Bag"],
@@ -51,22 +54,55 @@ export default function Contact() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    console.log("Product Inquiry:", formData);
+    setErrorMsg("");
+    setSubmitted(false);
+    setSending(true);
 
-    setSubmitted(true);
+   const templateParams = {
+  form_type: "Product Inquiry",
+  name: formData.name,
+  email: formData.email,
+  phone: formData.phone,
+  category: formData.category,
+  product: formData.product,
+  size: formData.size || "N/A",
+  quantity: formData.quantity,
+  message: formData.message || "N/A",
+  order_message: "N/A",
+  subtotal: "N/A",
+  delivery: "N/A",
+  discount: "N/A",
+  final_total: "N/A",
+};
 
-    setFormData({
-      name: "",
-      email: "",
-      whatsapp: "",
-      category: "",
-      product: "",
-      size: "",
-      quantity: "",
-      message: "",
-    });
+    emailjs
+      .send(
+        "YOUR_SERVICE_ID",
+        "YOUR_TEMPLATE_ID",
+        templateParams,
+        "YOUR_PUBLIC_KEY"
+      )
+      .then(() => {
+        setSubmitted(true);
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          category: "",
+          product: "",
+          size: "",
+          quantity: "",
+          message: "",
+        });
 
-    setTimeout(() => setSubmitted(false), 4000);
+        setTimeout(() => setSubmitted(false), 4000);
+      })
+      .catch(() => {
+        setErrorMsg("Failed to submit inquiry. Please try again.");
+      })
+      .finally(() => {
+        setSending(false);
+      });
   };
 
   return (
@@ -93,18 +129,10 @@ export default function Contact() {
               </p>
 
               <div className="info-card">
-                <Whatsapp />
-                <div>
-                  <strong>WhatsApp</strong>
-                  <span>+44 0000 000000</span>
-                </div>
-              </div>
-
-              <div className="info-card">
                 <Envelope />
                 <div>
                   <strong>Email</strong>
-                  <span>info@vipersports.com</span>
+                  <span>info@vipersports.co</span>
                 </div>
               </div>
 
@@ -112,7 +140,7 @@ export default function Contact() {
                 <Telephone />
                 <div>
                   <strong>Phone</strong>
-                  <span>+44 0000 000000</span>
+                  <span>+44 1706 536737 </span>
                 </div>
               </div>
 
@@ -120,7 +148,10 @@ export default function Contact() {
                 <GeoAlt />
                 <div>
                   <strong>Location</strong>
-                  <span>United Kingdom</span>
+                  <span>
+                    Registered Office: Unit 4, Green Grove Mill, Dyehouse Lane,
+                    Rochdale, England, OL16 2QN, Registered in England and Wales
+                  </span>
                 </div>
               </div>
             </div>
@@ -143,6 +174,8 @@ export default function Contact() {
                     will contact you soon.
                   </div>
                 )}
+
+                {errorMsg && <div className="error-msg">{errorMsg}</div>}
 
                 <Form onSubmit={handleSubmit}>
                   <Row className="g-3">
@@ -176,12 +209,12 @@ export default function Contact() {
 
                     <Col md={6}>
                       <Form.Group>
-                        <Form.Label>WhatsApp Number</Form.Label>
+                        <Form.Label>Phone Number</Form.Label>
                         <Form.Control
                           type="tel"
-                          name="whatsapp"
-                          placeholder="Enter WhatsApp number"
-                          value={formData.whatsapp}
+                          name="phone"
+                          placeholder="Enter phone number"
+                          value={formData.phone}
                           onChange={handleChange}
                           required
                         />
@@ -223,11 +256,13 @@ export default function Contact() {
                           </option>
 
                           {formData.category &&
-                            productsByCategory[formData.category].map((product) => (
-                              <option key={product} value={product}>
-                                {product}
-                              </option>
-                            ))}
+                            productsByCategory[formData.category].map(
+                              (product) => (
+                                <option key={product} value={product}>
+                                  {product}
+                                </option>
+                              )
+                            )}
                         </Form.Select>
                       </Form.Group>
                     </Col>
@@ -281,8 +316,12 @@ export default function Contact() {
                     </Col>
 
                     <Col xs={12}>
-                      <Button type="submit" className="submit-btn">
-                        <Send /> Submit Inquiry
+                      <Button
+                        type="submit"
+                        className="submit-btn"
+                        disabled={sending}
+                      >
+                        <Send /> {sending ? "Submitting..." : "Submit Inquiry"}
                       </Button>
                     </Col>
                   </Row>
@@ -529,6 +568,11 @@ export default function Contact() {
           transform: translateY(-4px);
         }
 
+        .submit-btn:disabled {
+          opacity: .7;
+          cursor: not-allowed;
+        }
+
         .success-msg {
           padding: 14px 16px;
           border-radius: 16px;
@@ -536,6 +580,16 @@ export default function Contact() {
           background: rgba(246,201,14,.12);
           border: 1px solid rgba(246,201,14,.28);
           color: var(--gold);
+          font-weight: 900;
+        }
+
+        .error-msg {
+          padding: 14px 16px;
+          border-radius: 16px;
+          margin-bottom: 18px;
+          background: rgba(255,0,0,.12);
+          border: 1px solid rgba(255,80,80,.28);
+          color: #ff6b6b;
           font-weight: 900;
         }
 

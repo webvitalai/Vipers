@@ -1,6 +1,6 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { ArrowUp, Whatsapp, Search, Cart3, X } from "react-bootstrap-icons";
+import { ArrowUp, Search, Cart3, X } from "react-bootstrap-icons";
 import { Badge } from "react-bootstrap";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -13,6 +13,11 @@ export default function MainLayout() {
   const [searchQuery, setSearchQuery] = useState("");
   const [cartCount, setCartCount] = useState(0);
 
+  const [showSpinner, setShowSpinner] = useState(false);
+  const [spinning, setSpinning] = useState(false);
+  const [reward, setReward] = useState(null);
+  const [wheelRotation, setWheelRotation] = useState(0);
+
   const updateCartCount = () => {
     const cart = JSON.parse(localStorage.getItem("cartItems")) || [];
     const total = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -20,6 +25,23 @@ export default function MainLayout() {
   };
 
   useEffect(() => {
+    const savedDiscount = JSON.parse(localStorage.getItem("viperDiscount"));
+    const spinUsed = localStorage.getItem("viperSpinUsed");
+
+    if (savedDiscount && savedDiscount.expiresAt > Date.now()) {
+      setReward(savedDiscount);
+      setShowSpinner(false);
+    } else {
+      localStorage.removeItem("viperDiscount");
+      localStorage.removeItem("discount");
+
+      if (!spinUsed) {
+        setShowSpinner(true);
+      } else {
+        setShowSpinner(false);
+      }
+    }
+
     const handleScroll = () => {
       setShowTopBtn(window.scrollY > 350);
     };
@@ -36,6 +58,52 @@ export default function MainLayout() {
       window.removeEventListener("cartUpdated", updateCartCount);
     };
   }, []);
+
+  const spinWheel = () => {
+    if (spinning || localStorage.getItem("viperSpinUsed")) return;
+
+    setSpinning(true);
+
+    const rewards = [
+      { label: "10% OFF", type: "percent", value: 10, index: 0 },
+      { label: "15% OFF", type: "percent", value: 15, index: 1 },
+      { label: "20% OFF", type: "percent", value: 20, index: 2 },
+      { label: "FREE DELIVERY", type: "delivery", value: 100, index: 3 },
+    ];
+
+    const random = rewards[Math.floor(Math.random() * rewards.length)];
+
+    const segmentAngle = 90;
+    const centerAngle = random.index * segmentAngle + segmentAngle / 2;
+    const finalRotation = 360 * 6 + (360 - centerAngle);
+
+    setWheelRotation(finalRotation);
+
+    setTimeout(() => {
+      const discountWithExpiry = {
+        ...random,
+        expiresAt: Date.now() + 24 * 60 * 60 * 1000,
+      };
+
+      setReward(discountWithExpiry);
+      setSpinning(false);
+
+      localStorage.setItem("viperSpinUsed", "true");
+      localStorage.setItem("viperDiscount", JSON.stringify(discountWithExpiry));
+      localStorage.setItem("discount", JSON.stringify(discountWithExpiry));
+
+      window.dispatchEvent(new Event("discountUpdated"));
+    }, 3200);
+  };
+
+  const closeSpinner = () => {
+    setShowSpinner(false);
+  };
+
+  const shopNow = () => {
+    setShowSpinner(false);
+    navigate("/categories");
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -56,7 +124,63 @@ export default function MainLayout() {
       <Outlet />
       <Footer />
 
-      {/* 🔥 TOP RIGHT FLOATING ICONS */}
+      {showSpinner && (
+        <div className="spin-overlay">
+          <div className="spin-card">
+            <button className="spin-close" onClick={closeSpinner}>
+              ×
+            </button>
+
+            <div className="spin-top-badge">Limited Time</div>
+
+            <h2>
+              Spin & <span>Win</span>
+            </h2>
+
+            <p className="spin-sub">
+              Win a discount and apply it automatically in your cart.
+            </p>
+
+            <div className="wheel-wrap">
+              <div className="wheel-pointer"></div>
+
+              <div
+                className={`wheel ${spinning ? "spinning" : ""}`}
+                style={{ transform: `rotate(${wheelRotation}deg)` }}
+              >
+                <div className="wheel-segment seg-1">10%</div>
+                <div className="wheel-segment seg-2">15%</div>
+                <div className="wheel-segment seg-3">20%</div>
+                <div className="wheel-segment seg-4">FREE</div>
+              </div>
+
+              <div className="wheel-center">WIN</div>
+            </div>
+
+            {reward && (
+              <div className="reward-box">
+                <p>You won</p>
+                <h4>{reward.label}</h4>
+
+                <small>Valid for 24 hours. Auto-applies in cart.</small>
+
+                <div className="reward-actions">
+                  <button className="shop-now-btn" onClick={shopNow}>
+                    Shop Now
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {!reward && (
+              <button className="spin-btn" onClick={spinWheel}>
+                {spinning ? "Spinning..." : "Spin Now"}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="floating-top-icons">
         <button
           className="floating-btn"
@@ -74,7 +198,6 @@ export default function MainLayout() {
         </button>
       </div>
 
-      {/* 🔍 SEARCH BOX */}
       {showSearch && (
         <form className="floating-search" onSubmit={handleSearch}>
           <input
@@ -90,17 +213,6 @@ export default function MainLayout() {
         </form>
       )}
 
-      {/* 💬 WHATSAPP */}
-      <a
-        href="https://wa.me/447700900341"
-        target="_blank"
-        rel="noreferrer"
-        className="whatsapp-float-btn"
-      >
-        <Whatsapp />
-      </a>
-
-      {/* ⬆ SCROLL TOP */}
       {showTopBtn && (
         <button className="scroll-top-btn" onClick={scrollToTop}>
           <ArrowUp />
@@ -114,7 +226,267 @@ export default function MainLayout() {
           --gold-deep:#b8860b;
         }
 
-        /* ===== FLOATING ICONS CONTAINER ===== */
+        .spin-overlay{
+          position:fixed;
+          inset:0;
+          background:rgba(0,0,0,.84);
+          backdrop-filter:blur(14px);
+          z-index:99999;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          padding:18px;
+        }
+
+        .spin-card{
+          position:relative;
+          width:100%;
+          max-width:455px;
+          padding:42px 28px 34px;
+          border-radius:34px;
+          text-align:center;
+          background:
+            radial-gradient(circle at 15% 0%, rgba(246,201,14,.22), transparent 38%),
+            radial-gradient(circle at 85% 100%, rgba(184,134,11,.18), transparent 42%),
+            linear-gradient(145deg, rgba(17,17,17,.98), rgba(2,2,2,.98));
+          border:1px solid rgba(246,201,14,.38);
+          box-shadow:0 35px 110px rgba(0,0,0,.82);
+          animation:spinPopup .35s ease;
+          color:#fff;
+          overflow:hidden;
+        }
+
+        .spin-card::before{
+          content:"";
+          position:absolute;
+          inset:0;
+          border-radius:inherit;
+          padding:1px;
+          background:linear-gradient(135deg, rgba(255,242,166,.75), transparent, rgba(246,201,14,.35));
+          -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          -webkit-mask-composite:xor;
+          mask-composite:exclude;
+          pointer-events:none;
+        }
+
+        .spin-close{
+          position:absolute;
+          top:14px;
+          right:16px;
+          width:36px;
+          height:36px;
+          border:none;
+          border-radius:50%;
+          background:rgba(255,255,255,.08);
+          color:#fff;
+          font-size:25px;
+          line-height:1;
+          cursor:pointer;
+          z-index:2;
+        }
+
+        .spin-top-badge{
+          display:inline-flex;
+          align-items:center;
+          justify-content:center;
+          padding:8px 16px;
+          border-radius:999px;
+          background:rgba(246,201,14,.14);
+          border:1px solid rgba(246,201,14,.28);
+          color:var(--gold);
+          font-size:11px;
+          font-weight:1000;
+          text-transform:uppercase;
+          letter-spacing:2px;
+          margin-bottom:12px;
+        }
+
+        .spin-card h2{
+          margin:0;
+          font-size:44px;
+          font-weight:1000;
+          text-transform:uppercase;
+          font-family:"Arial Black", Impact, sans-serif;
+          letter-spacing:-1px;
+        }
+
+        .spin-card h2 span{
+          background:linear-gradient(135deg,var(--gold-soft),var(--gold),var(--gold-deep));
+          -webkit-background-clip:text;
+          -webkit-text-fill-color:transparent;
+        }
+
+        .spin-sub{
+          margin:10px auto 20px;
+          color:rgba(255,255,255,.68);
+          font-size:14px;
+          font-weight:700;
+          max-width:330px;
+        }
+
+        .wheel-wrap{
+          position:relative;
+          width:214px;
+          height:214px;
+          margin:25px auto;
+        }
+
+        .wheel-pointer{
+          position:absolute;
+          top:-8px;
+          left:50%;
+          transform:translateX(-50%);
+          width:0;
+          height:0;
+          border-left:14px solid transparent;
+          border-right:14px solid transparent;
+          border-top:26px solid var(--gold);
+          z-index:5;
+          filter:drop-shadow(0 0 12px rgba(246,201,14,.7));
+        }
+
+        .wheel{
+          width:214px;
+          height:214px;
+          border-radius:50%;
+          position:relative;
+          background:
+            conic-gradient(
+              from 0deg,
+              #b8860b 0deg 90deg,
+              #111 90deg 180deg,
+              #f6c90e 180deg 270deg,
+              #1b1b1b 270deg 360deg
+            );
+          border:6px solid rgba(246,201,14,.55);
+          box-shadow:
+            inset 0 0 28px rgba(0,0,0,.65),
+            0 0 45px rgba(246,201,14,.34);
+          transition:transform 3.2s cubic-bezier(.12,.82,.17,1);
+          overflow:hidden;
+        }
+
+        .wheel::after{
+          content:"";
+          position:absolute;
+          inset:14px;
+          border-radius:50%;
+          border:1px solid rgba(255,255,255,.12);
+        }
+
+        .wheel-segment{
+          position:absolute;
+          width:50%;
+          height:50%;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          color:#fff;
+          font-size:17px;
+          font-weight:1000;
+          text-shadow:0 3px 10px rgba(0,0,0,.9);
+          letter-spacing:.5px;
+        }
+
+        .seg-1{ top:0; right:0; }
+        .seg-2{ bottom:0; right:0; }
+        .seg-3{ bottom:0; left:0; }
+        .seg-4{ top:0; left:0; }
+
+        .wheel-center{
+          position:absolute;
+          top:50%;
+          left:50%;
+          transform:translate(-50%,-50%);
+          width:66px;
+          height:66px;
+          border-radius:50%;
+          background:linear-gradient(135deg,var(--gold-soft),var(--gold),var(--gold-deep));
+          color:#050505;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          font-size:12px;
+          font-weight:1000;
+          z-index:4;
+          border:5px solid #090909;
+          box-shadow:0 0 24px rgba(246,201,14,.45);
+        }
+
+        .reward-box{
+          margin:8px 0 18px;
+          padding:18px;
+          border-radius:20px;
+          background:
+            radial-gradient(circle at top left, rgba(246,201,14,.12), transparent 38%),
+            rgba(255,255,255,.06);
+          border:1px solid rgba(246,201,14,.24);
+        }
+
+        .reward-box p{
+          margin:0 0 5px;
+          color:rgba(255,255,255,.62);
+          font-weight:900;
+          text-transform:uppercase;
+          font-size:11px;
+          letter-spacing:1.5px;
+        }
+
+        .reward-box h4{
+          margin:0 0 12px;
+          color:var(--gold);
+          font-size:30px;
+          font-weight:1000;
+          text-transform:uppercase;
+        }
+
+        .reward-box small{
+          display:block;
+          color:rgba(255,255,255,.56);
+          font-weight:700;
+          margin-bottom:14px;
+        }
+
+        .reward-actions{
+          display:flex;
+          gap:10px;
+          justify-content:center;
+          flex-wrap:wrap;
+        }
+
+        .shop-now-btn{
+          border:none;
+          border-radius:12px;
+          padding:10px 18px;
+          font-weight:900;
+          text-transform:uppercase;
+          background:linear-gradient(135deg,var(--gold-soft),var(--gold));
+          color:#050505;
+        }
+
+        .spin-btn{
+          border:none;
+          border-radius:16px;
+          padding:13px 32px;
+          background:linear-gradient(135deg,var(--gold-soft),var(--gold),var(--gold-deep));
+          color:#050505;
+          font-weight:1000;
+          text-transform:uppercase;
+          cursor:pointer;
+          box-shadow:0 18px 38px rgba(246,201,14,.24);
+        }
+
+        @keyframes spinPopup{
+          from{
+            opacity:0;
+            transform:translateY(25px) scale(.92);
+          }
+          to{
+            opacity:1;
+            transform:translateY(0) scale(1);
+          }
+        }
+
         .floating-top-icons{
           position:fixed;
           top:100px;
@@ -130,7 +502,6 @@ export default function MainLayout() {
           border:1px solid rgba(246,201,14,.2);
         }
 
-        /* ===== ICON BUTTON ===== */
         .floating-btn{
           width:50px;
           height:50px;
@@ -155,7 +526,6 @@ export default function MainLayout() {
           transform:translateY(-4px) scale(1.05);
         }
 
-        /* ===== CART BADGE ===== */
         .cart-btn .badge{
           position:absolute;
           top:-8px;
@@ -173,7 +543,6 @@ export default function MainLayout() {
           box-shadow:0 0 12px rgba(246,201,14,.6);
         }
 
-        /* ===== SEARCH BOX ===== */
         .floating-search{
           position:fixed;
           top:170px;
@@ -209,24 +578,6 @@ export default function MainLayout() {
           font-weight:700;
         }
 
-        /* ===== WHATSAPP ===== */
-        .whatsapp-float-btn{
-          position:fixed;
-          right:20px;
-          bottom:90px;
-          width:55px;
-          height:55px;
-          border-radius:16px;
-          background:linear-gradient(135deg,#25D366,#128C7E);
-          color:#fff;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          font-size:26px;
-          z-index:9999;
-        }
-
-        /* ===== SCROLL TOP ===== */
         .scroll-top-btn{
           position:fixed;
           right:20px;
@@ -244,11 +595,24 @@ export default function MainLayout() {
           z-index:9999;
         }
 
-        /* ===== MOBILE ===== */
         @media(max-width:480px){
           .floating-search{
             width:90%;
             right:5%;
+          }
+
+          .spin-card{
+            padding:34px 22px;
+          }
+
+          .spin-card h2{
+            font-size:36px;
+          }
+
+          .wheel-wrap,
+          .wheel{
+            width:190px;
+            height:190px;
           }
         }
       `}</style>
