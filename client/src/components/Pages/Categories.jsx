@@ -15,13 +15,13 @@ export default function Categories() {
       products: [
         { name: "Men Boxing Kit", price: "£149.99", img: "/Images/vg1.png" },
         { name: "Women Boxing Kit", price: "£129.99", img: "/Images/vg2.png" },
-        { name: "Boxing Shoes", price: "£89.99", img: "/Images/2.png" },
-        { name: "Punching Bag", price: "£199.99", img: "/Images/8.png" },
+        { name: "Boxing Shoes", price: "£89.99", img: "/Images/5.png" },
+        { name: "Punching Bag", price: "£199.99", img: "/Images/2.png" },
       ],
     },
 
     Football: {
-      banner: "/Images/banner_2.png",
+      banner: "/Images/FOOT BALL.png",
       products: [
         { name: "Football Kit", price: "£99.99", img: "/Images/3.png" },
         { name: "Training Jersey", price: "£59.99", img: "/Images/13.png" },
@@ -287,7 +287,7 @@ export default function Categories() {
             radial-gradient(circle at bottom right, rgba(184,134,11,.12), transparent 34%),
             var(--black);
           color: var(--white-soft);
-          padding: 100px 0 85px;
+          padding: 35px 0 85px;
           font-family: "Trebuchet MS", Arial, sans-serif;
           overflow: hidden;
         }
@@ -300,7 +300,7 @@ export default function Categories() {
           margin: 0 auto 24px;
           border-radius: 34px;
           overflow: hidden;
-          background: rgba(14,14,14,.78);
+          background: #050505;
           border: 1px solid rgba(246,201,14,.18);
           box-shadow: 0 28px 80px rgba(0,0,0,.55);
         }
@@ -322,21 +322,23 @@ export default function Categories() {
         .category-hero img {
           width: 100%;
           height: 100%;
-          object-fit: cover;
-          object-position: center;
+          object-fit: contain;
+          object-position: center center;
           display: block;
-          filter: brightness(.88) contrast(1.12) saturate(1.15);
-          transform: scale(1.01);
-          animation: heroZoom 7s ease-in-out infinite alternate;
+          background: #050505;
+          filter: brightness(.92) contrast(1.06) saturate(1.08);
+          transform: none !important;
+          animation: none !important;
         }
 
         .category-hero-overlay {
           position: absolute;
           inset: 0;
           background:
-            radial-gradient(circle at 20% 55%, rgba(246,201,14,.22), transparent 28%),
-            linear-gradient(90deg, rgba(0,0,0,.78), rgba(0,0,0,.36), rgba(0,0,0,.1)),
-            linear-gradient(to top, rgba(0,0,0,.75), transparent);
+            radial-gradient(circle at 20% 55%, rgba(246,201,14,.14), transparent 28%),
+            linear-gradient(90deg, rgba(0,0,0,.34), rgba(0,0,0,.16), rgba(0,0,0,.08)),
+            linear-gradient(to top, rgba(0,0,0,.42), transparent);
+          pointer-events: none;
         }
 
         .category-hero-content {
@@ -632,11 +634,6 @@ export default function Categories() {
           }
         }
 
-        @keyframes heroZoom {
-          from { transform: scale(1.01); }
-          to { transform: scale(1.08); }
-        }
-
         @keyframes shineText {
           0% { background-position: 0% center; }
           100% { background-position: 260% center; }
@@ -644,16 +641,23 @@ export default function Categories() {
 
         @media(max-width: 768px) {
           .category-page {
-            padding: 92px 0 60px;
+            padding: 28px 0 60px;
           }
 
           .category-hero {
-            height: 270px;
+            height: auto;
+            min-height: 260px;
             border-radius: 24px;
           }
 
           .category-hero img {
-            animation: none;
+            width: 100%;
+            height: auto;
+            min-height: 260px;
+            object-fit: contain;
+            object-position: center center;
+            animation: none !important;
+            transform: none !important;
           }
 
           .category-hero-content {

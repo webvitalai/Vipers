@@ -48,11 +48,7 @@ export default function About() {
             Built For <span>Performance</span>
           </h1>
 
-          <p>
-            Viper Sports is a premium activewear and sports gear brand designed
-            for athletes, fitness lovers and fighters who demand style,
-            strength, comfort and confidence.
-          </p>
+          
         </Container>
       </section>
 
@@ -183,6 +179,7 @@ export default function About() {
           text-align: center;
           overflow: hidden;
           background: url("/Images/BOXING.png") center/cover no-repeat;
+          filter: brightness(1.15) contrast(1.08) saturate(1.12);
         }
 
         .about-hero::before {

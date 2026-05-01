@@ -10,13 +10,8 @@ import {
 } from "react-bootstrap";
 import {
   ArrowRight,
-  Whatsapp,
   Envelope,
   LightningChargeFill,
-  Phone,
-  PhoneFill,
-  PhoneLandscape,
-  PhoneVibrateFill,
   PhoneVibrate,
 } from "react-bootstrap-icons";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -50,7 +45,6 @@ export default function Home() {
 
   return (
     <main className="home-page">
-      {/* HERO */}
       <section className="hero-carousel-wrap">
         <Carousel fade controls indicators interval={3500} pause={false}>
           {slides.map((slide, index) => (
@@ -73,9 +67,7 @@ export default function Home() {
                           Shop Now <ArrowRight className="ms-2" />
                         </Button>
 
-                        <Button className="btn-glass">
-                          Explore
-                        </Button>
+                        <Button className="btn-glass">Explore</Button>
                       </div>
                     </Col>
                   </Row>
@@ -86,7 +78,6 @@ export default function Home() {
         </Carousel>
       </section>
 
-      {/* CATEGORIES */}
       <section className="section-space">
         <Container>
           <div className="section-head text-center">
@@ -101,7 +92,7 @@ export default function Home() {
               <Col xs={6} md={6} lg={3} key={item.title}>
                 <Card
                   className="category-card reveal-card"
-                  style={{ animationDelay: `${index * 0.12}s` }}
+                  style={{ animationDelay: `${index * 0.14}s` }}
                   onClick={() => openCategory(item.title)}
                 >
                   <Card.Img src={item.img} alt={item.title} />
@@ -127,7 +118,6 @@ export default function Home() {
         </Container>
       </section>
 
-      {/* PRODUCTS */}
       <section className="section-space product-section">
         <Container>
           <Row className="align-items-end mb-4 mb-md-5">
@@ -150,7 +140,7 @@ export default function Home() {
               <Col xs={12} md={6} key={item.title}>
                 <Card
                   className="product-card reveal-card"
-                  style={{ animationDelay: `${index * 0.15}s` }}
+                  style={{ animationDelay: `${index * 0.16}s` }}
                 >
                   <Row className="g-0 align-items-center">
                     <Col xs={12} md={6}>
@@ -177,7 +167,6 @@ export default function Home() {
         </Container>
       </section>
 
-      {/* NEWSLETTER */}
       <section className="section-space">
         <Container>
           <div className="newsletter-box reveal-card">
@@ -250,6 +239,7 @@ export default function Home() {
         .hero-slide {
           position: relative;
           min-height: 100vh;
+          background: #050505;
         }
 
         .hero-bg {
@@ -258,20 +248,22 @@ export default function Home() {
           width: 100%;
           height: 100%;
           min-height: 100vh;
-          object-fit: cover;
-          object-position: center;
-          filter: brightness(1.06) contrast(1.12) saturate(1.14);
-          animation: heroZoom 6s ease-in-out infinite alternate;
+          object-fit: contain;
+          object-position: center center;
+          background: #050505;
+          filter: brightness(1.22) contrast(1.1) saturate(1.18);
+          animation: none !important;
+          transform: none !important;
         }
 
         .hero-overlay {
-          position: absolute;
-          inset: 0;
-          background:
-            radial-gradient(circle at 22% 42%, rgba(246,201,14,.24), transparent 24%),
-            linear-gradient(90deg, rgba(0,0,0,.82), rgba(0,0,0,.42), rgba(0,0,0,.14)),
-            linear-gradient(to top, rgba(5,5,5,.96), transparent);
-        }
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 22% 42%, rgba(246,201,14,.12), transparent 24%),
+    linear-gradient(90deg, rgba(0,0,0,.38), rgba(0,0,0,.16), rgba(0,0,0,.05)),
+    linear-gradient(to top, rgba(5,5,5,.45), transparent);
+}
 
         .hero-content {
           position: relative;
@@ -280,7 +272,9 @@ export default function Home() {
 
         .hero-row {
           min-height: 100vh;
-          padding-top: 105px;
+          display: flex;
+          align-items: center;
+          padding-top: 60px;
         }
 
         .hero-badge,
@@ -431,14 +425,22 @@ export default function Home() {
 
         .category-card {
           min-height: 370px;
+          height: 370px;
           border: 1px solid rgba(246,201,14,.18) !important;
           border-radius: 32px !important;
           overflow: hidden;
-          background: var(--card) !important;
+          background: #050505 !important;
           cursor: pointer;
           transition: .45s ease;
           box-shadow: 0 20px 45px rgba(0,0,0,.38);
           backdrop-filter: blur(18px);
+          transform-style: preserve-3d;
+          will-change: transform;
+        }
+
+        .category-card:hover {
+          transform: translateY(-14px) scale(1.025) rotateX(2deg);
+          box-shadow: 0 35px 80px rgba(246,201,14,.16), 0 35px 70px rgba(0,0,0,.65);
         }
 
         .category-card::before,
@@ -455,32 +457,47 @@ export default function Home() {
           mask-composite: exclude;
           pointer-events: none;
           opacity: .72;
+          z-index: 4;
         }
 
-        .category-card:hover {
-          transform: translateY(-12px) scale(1.02);
-          box-shadow: 0 30px 70px rgba(246,201,14,.12), 0 30px 65px rgba(0,0,0,.6);
+        .category-card::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(120deg, transparent 20%, rgba(255,255,255,.18), transparent 80%);
+          transform: translateX(-120%) skewX(-18deg);
+          transition: .7s ease;
+          z-index: 3;
+          pointer-events: none;
+        }
+
+        .category-card:hover::after {
+          transform: translateX(120%) skewX(-18deg);
         }
 
         .category-card img {
-          height: 370px;
-          object-fit: cover;
-          object-position: center;
-          filter: brightness(1.08) contrast(1.1) saturate(1.15);
-          transition: .6s ease;
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          object-position: center center;
+          background: #050505;
+          filter: brightness(1.08) contrast(1.08) saturate(1.12);
+          transition: .5s ease;
+          transform: scale(.98);
         }
 
         .category-card:hover img {
-          transform: scale(1.1);
-          filter: brightness(1.18) contrast(1.16) saturate(1.28);
+          transform: scale(1.04);
+          filter: brightness(1.16) contrast(1.12) saturate(1.18);
         }
 
         .category-overlay {
           position: absolute;
           inset: 0;
           background:
-            linear-gradient(to top, rgba(0,0,0,.78), rgba(0,0,0,.06)),
-            radial-gradient(circle at bottom left, rgba(246,201,14,.18), transparent 42%);
+            linear-gradient(to top, rgba(0,0,0,.70), rgba(0,0,0,.04)),
+            radial-gradient(circle at bottom left, rgba(246,201,14,.14), transparent 42%);
+          z-index: 1;
         }
 
         .category-content {
@@ -488,6 +505,7 @@ export default function Home() {
           flex-direction: column;
           justify-content: flex-end;
           padding: 26px !important;
+          z-index: 2;
         }
 
         .category-content h4 {
@@ -499,6 +517,12 @@ export default function Home() {
           font-family: "Arial Black", Impact, sans-serif;
           color: var(--white-soft);
           text-shadow: 0 4px 18px rgba(0,0,0,.75);
+          transition: .35s ease;
+        }
+
+        .category-card:hover .category-content h4 {
+          transform: translateY(-4px);
+          color: var(--gold-soft);
         }
 
         .category-btn {
@@ -533,11 +557,28 @@ export default function Home() {
           transition: .45s ease;
           box-shadow: 0 22px 55px rgba(0,0,0,.4);
           backdrop-filter: blur(18px);
+          transform-style: preserve-3d;
+          will-change: transform;
         }
 
         .product-card:hover {
-          transform: translateY(-10px) scale(1.01);
-          box-shadow: 0 30px 76px rgba(246,201,14,.12), 0 30px 70px rgba(0,0,0,.6);
+          transform: translateY(-12px) scale(1.018);
+          box-shadow: 0 35px 82px rgba(246,201,14,.15), 0 35px 70px rgba(0,0,0,.65);
+        }
+
+        .product-card::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(120deg, transparent 22%, rgba(255,255,255,.14), transparent 78%);
+          transform: translateX(-120%) skewX(-18deg);
+          transition: .75s ease;
+          z-index: 3;
+          pointer-events: none;
+        }
+
+        .product-card:hover::after {
+          transform: translateX(120%) skewX(-18deg);
         }
 
         .product-image-box {
@@ -567,6 +608,8 @@ export default function Home() {
 
         .product-body {
           padding: 34px !important;
+          position: relative;
+          z-index: 5;
         }
 
         .product-badge {
@@ -605,6 +648,10 @@ export default function Home() {
           overflow: hidden;
         }
 
+        .newsletter-box:hover {
+          animation: softPulse 1.8s ease infinite alternate;
+        }
+
         .input-box {
           display: flex;
           align-items: center;
@@ -640,7 +687,20 @@ export default function Home() {
 
         .reveal-card {
           opacity: 0;
-          animation: slideUp .9s ease forwards;
+          animation: cardReveal .85s ease forwards;
+        }
+
+        @keyframes cardReveal {
+          from {
+            opacity: 0;
+            transform: translateY(46px) scale(.96);
+            filter: blur(5px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+          }
         }
 
         @keyframes slideUp {
@@ -659,19 +719,23 @@ export default function Home() {
           to { opacity: 1; }
         }
 
-        @keyframes heroZoom {
-          from { transform: scale(1); }
-          to { transform: scale(1.08); }
-        }
-
         @keyframes shineText {
           0% { background-position: 0% center; }
           100% { background-position: 260% center; }
         }
 
+        @keyframes softPulse {
+          from {
+            box-shadow: 0 24px 70px rgba(0,0,0,.45);
+          }
+          to {
+            box-shadow: 0 28px 85px rgba(246,201,14,.12), 0 24px 70px rgba(0,0,0,.52);
+          }
+        }
+
         @media (max-width: 991px) {
           .hero-row {
-            padding-top: 95px;
+            padding-top: 40px;
           }
 
           .hero-title {
@@ -697,19 +761,21 @@ export default function Home() {
           }
 
           .hero-bg {
-            object-position: center top;
-            animation: none;
+            object-fit: contain;
+            object-position: center center;
+            animation: none !important;
+            transform: none !important;
           }
 
           .hero-overlay {
             background:
-              linear-gradient(to top, rgba(0,0,0,.82), rgba(0,0,0,.25)),
-              linear-gradient(90deg, rgba(0,0,0,.5), rgba(0,0,0,.08));
+              linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,.18)),
+              linear-gradient(90deg, rgba(0,0,0,.42), rgba(0,0,0,.08));
           }
 
           .hero-row {
             min-height: 72vh;
-            padding-top: 80px;
+            padding-top: 35px;
             align-items: end !important;
             padding-bottom: 70px;
           }
@@ -775,7 +841,13 @@ export default function Home() {
           }
 
           .category-card img {
-            height: 230px;
+            height: 100%;
+            object-fit: contain;
+          }
+
+          .category-card:hover,
+          .product-card:hover {
+            transform: translateY(-8px) scale(1.01);
           }
 
           .category-content {
@@ -870,10 +942,6 @@ export default function Home() {
 
           .category-card {
             min-height: 210px;
-            height: 210px;
-          }
-
-          .category-card img {
             height: 210px;
           }
 

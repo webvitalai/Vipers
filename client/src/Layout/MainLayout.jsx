@@ -1,6 +1,6 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { ArrowUp, Search, Cart3, X } from "react-bootstrap-icons";
+import { ArrowUp, Search, Cart3, X, Whatsapp } from "react-bootstrap-icons";
 import { Badge } from "react-bootstrap";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -161,7 +161,6 @@ export default function MainLayout() {
               <div className="reward-box">
                 <p>You won</p>
                 <h4>{reward.label}</h4>
-
                 <small>Valid for 24 hours. Auto-applies in cart.</small>
 
                 <div className="reward-actions">
@@ -186,14 +185,14 @@ export default function MainLayout() {
           className="floating-btn"
           onClick={() => setShowSearch(!showSearch)}
         >
-          {showSearch ? <X /> : <Search />}
+          {showSearch ? <X size={18} /> : <Search size={18} />}
         </button>
 
         <button
           className="floating-btn cart-btn"
           onClick={() => navigate("/cart")}
         >
-          <Cart3 />
+          <Cart3 size={18} />
           <Badge pill>{cartCount}</Badge>
         </button>
       </div>
@@ -208,10 +207,19 @@ export default function MainLayout() {
             autoFocus
           />
           <button type="submit">
-            <Search /> Search
+            <Search size={16} /> Search
           </button>
         </form>
       )}
+
+      <a
+        href="https://wa.me/447398390815"
+        target="_blank"
+        rel="noreferrer"
+        className={`whatsapp-float-btn ${showTopBtn ? "with-top-btn" : ""}`}
+      >
+        <Whatsapp />
+      </a>
 
       {showTopBtn && (
         <button className="scroll-top-btn" onClick={scrollToTop}>
@@ -256,19 +264,6 @@ export default function MainLayout() {
           overflow:hidden;
         }
 
-        .spin-card::before{
-          content:"";
-          position:absolute;
-          inset:0;
-          border-radius:inherit;
-          padding:1px;
-          background:linear-gradient(135deg, rgba(255,242,166,.75), transparent, rgba(246,201,14,.35));
-          -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-          -webkit-mask-composite:xor;
-          mask-composite:exclude;
-          pointer-events:none;
-        }
-
         .spin-close{
           position:absolute;
           top:14px;
@@ -287,8 +282,6 @@ export default function MainLayout() {
 
         .spin-top-badge{
           display:inline-flex;
-          align-items:center;
-          justify-content:center;
           padding:8px 16px;
           border-radius:999px;
           background:rgba(246,201,14,.14);
@@ -307,7 +300,6 @@ export default function MainLayout() {
           font-weight:1000;
           text-transform:uppercase;
           font-family:"Arial Black", Impact, sans-serif;
-          letter-spacing:-1px;
         }
 
         .spin-card h2 span{
@@ -342,7 +334,6 @@ export default function MainLayout() {
           border-right:14px solid transparent;
           border-top:26px solid var(--gold);
           z-index:5;
-          filter:drop-shadow(0 0 12px rgba(246,201,14,.7));
         }
 
         .wheel{
@@ -359,19 +350,8 @@ export default function MainLayout() {
               #1b1b1b 270deg 360deg
             );
           border:6px solid rgba(246,201,14,.55);
-          box-shadow:
-            inset 0 0 28px rgba(0,0,0,.65),
-            0 0 45px rgba(246,201,14,.34);
           transition:transform 3.2s cubic-bezier(.12,.82,.17,1);
           overflow:hidden;
-        }
-
-        .wheel::after{
-          content:"";
-          position:absolute;
-          inset:14px;
-          border-radius:50%;
-          border:1px solid rgba(255,255,255,.12);
         }
 
         .wheel-segment{
@@ -384,8 +364,6 @@ export default function MainLayout() {
           color:#fff;
           font-size:17px;
           font-weight:1000;
-          text-shadow:0 3px 10px rgba(0,0,0,.9);
-          letter-spacing:.5px;
         }
 
         .seg-1{ top:0; right:0; }
@@ -410,16 +388,13 @@ export default function MainLayout() {
           font-weight:1000;
           z-index:4;
           border:5px solid #090909;
-          box-shadow:0 0 24px rgba(246,201,14,.45);
         }
 
         .reward-box{
           margin:8px 0 18px;
           padding:18px;
           border-radius:20px;
-          background:
-            radial-gradient(circle at top left, rgba(246,201,14,.12), transparent 38%),
-            rgba(255,255,255,.06);
+          background:rgba(255,255,255,.06);
           border:1px solid rgba(246,201,14,.24);
         }
 
@@ -447,44 +422,15 @@ export default function MainLayout() {
           margin-bottom:14px;
         }
 
-        .reward-actions{
-          display:flex;
-          gap:10px;
-          justify-content:center;
-          flex-wrap:wrap;
-        }
-
-        .shop-now-btn{
+        .shop-now-btn,
+        .spin-btn{
           border:none;
-          border-radius:12px;
-          padding:10px 18px;
+          border-radius:14px;
+          padding:12px 24px;
           font-weight:900;
           text-transform:uppercase;
           background:linear-gradient(135deg,var(--gold-soft),var(--gold));
           color:#050505;
-        }
-
-        .spin-btn{
-          border:none;
-          border-radius:16px;
-          padding:13px 32px;
-          background:linear-gradient(135deg,var(--gold-soft),var(--gold),var(--gold-deep));
-          color:#050505;
-          font-weight:1000;
-          text-transform:uppercase;
-          cursor:pointer;
-          box-shadow:0 18px 38px rgba(246,201,14,.24);
-        }
-
-        @keyframes spinPopup{
-          from{
-            opacity:0;
-            transform:translateY(25px) scale(.92);
-          }
-          to{
-            opacity:1;
-            transform:translateY(0) scale(1);
-          }
         }
 
         .floating-top-icons{
@@ -494,8 +440,8 @@ export default function MainLayout() {
           z-index:9999;
           display:flex;
           flex-direction:row;
-          gap:12px;
-          padding:6px 10px;
+          gap:10px;
+          padding:6px 8px;
           border-radius:999px;
           background:rgba(0,0,0,.55);
           backdrop-filter:blur(12px);
@@ -503,19 +449,18 @@ export default function MainLayout() {
         }
 
         .floating-btn{
-          width:50px;
-          height:50px;
-          border-radius:14px;
+          width:42px;
+          height:42px;
+          border-radius:12px;
           border:1px solid rgba(246,201,14,.35);
           background:
-            radial-gradient(circle at top left, rgba(255,242,166,.45), transparent 42%),
+            radial-gradient(circle at top left, rgba(255,242,166,.38), transparent 42%),
             linear-gradient(135deg,#0a0a0a,#221b09);
           color:var(--gold);
           display:flex;
           align-items:center;
           justify-content:center;
-          font-size:20px;
-          box-shadow:0 12px 30px rgba(0,0,0,.4);
+          box-shadow:0 10px 24px rgba(0,0,0,.35);
           position:relative;
           transition:.3s;
         }
@@ -523,29 +468,28 @@ export default function MainLayout() {
         .floating-btn:hover{
           background:linear-gradient(135deg,var(--gold-soft),var(--gold));
           color:#000;
-          transform:translateY(-4px) scale(1.05);
+          transform:translateY(-3px) scale(1.04);
         }
 
         .cart-btn .badge{
           position:absolute;
-          top:-8px;
-          right:-8px;
+          top:-7px;
+          right:-7px;
           background:linear-gradient(135deg,#fff2a6,#f6c90e,#b8860b);
           color:#000;
-          font-size:11px;
+          font-size:10px;
           font-weight:900;
-          min-width:20px;
-          height:20px;
+          min-width:18px;
+          height:18px;
           display:flex;
           align-items:center;
           justify-content:center;
           border-radius:50%;
-          box-shadow:0 0 12px rgba(246,201,14,.6);
         }
 
         .floating-search{
           position:fixed;
-          top:170px;
+          top:160px;
           right:20px;
           width:320px;
           background:#0a0a0a;
@@ -576,6 +520,38 @@ export default function MainLayout() {
           background:linear-gradient(135deg,var(--gold-soft),var(--gold));
           color:#000;
           font-weight:700;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          gap:7px;
+        }
+
+        .whatsapp-float-btn{
+          position:fixed;
+          right:20px;
+          bottom:20px;
+          width:50px;
+          height:50px;
+          border-radius:16px;
+          background:linear-gradient(135deg,#25D366,#128C7E);
+          color:#fff;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          font-size:24px;
+          z-index:9999;
+          text-decoration:none;
+          box-shadow:0 16px 35px rgba(0,0,0,.35);
+          transition:.3s ease;
+        }
+
+        .whatsapp-float-btn.with-top-btn{
+          bottom:82px;
+        }
+
+        .whatsapp-float-btn:hover{
+          color:#fff;
+          transform:translateY(-4px) scale(1.05);
         }
 
         .scroll-top-btn{
@@ -595,10 +571,43 @@ export default function MainLayout() {
           z-index:9999;
         }
 
+        @keyframes spinPopup{
+          from{
+            opacity:0;
+            transform:translateY(25px) scale(.92);
+          }
+          to{
+            opacity:1;
+            transform:translateY(0) scale(1);
+          }
+        }
+
         @media(max-width:480px){
+          .floating-top-icons{
+            top:92px;
+            right:12px;
+          }
+
+          .floating-btn{
+            width:40px;
+            height:40px;
+          }
+
           .floating-search{
             width:90%;
             right:5%;
+            top:148px;
+          }
+
+          .whatsapp-float-btn,
+          .scroll-top-btn{
+            right:14px;
+            width:48px;
+            height:48px;
+          }
+
+          .whatsapp-float-btn.with-top-btn{
+            bottom:78px;
           }
 
           .spin-card{
